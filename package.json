@@ -1,6 +1,6 @@
 {
   "name": "bun-sqlite-cache",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "description": "",
@@ -15,16 +15,20 @@
     "bun"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/wobsoriano/pkg-name#readme",
+  "homepage": "https://github.com/notskamr/bun-sqlite-cache#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wobsoriano/pkg-name.git"
+    "url": "git+https://github.com/notskamr/bun-sqlite-cache.git"
   },
-  "bugs": "https://github.com/wobsoriano/pkg-name/issues",
-  "author": "Robert Soriano <sorianorobertc@gmail.com>",
+  "bugs": "https://github.com/wobsoriano/bun-sqlite-cache/issues",
+  "author": "Varun Sahni <contact@vsahni.me>",
   "devDependencies": {
-    "bun-plugin-dts": "^0.2.1",
     "@types/bun": "^1.0.0",
+    "@types/node": "^20.11.0",
+    "bun-plugin-dts": "^0.2.1",
     "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "zod": "^3.22.4"
   }
 }
