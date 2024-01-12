@@ -7,7 +7,7 @@ const COMPRESSION_MIN_LENGTH = 1024;
 
 export interface BunSQLiteCacheConfiguration {
     readonly database?: string;
-    readonly defaultTTLMs?: number;
+    readonly defaultTtlMs?: number;
     readonly maxItems?: number;
     readonly compress?: boolean;
 }
@@ -71,7 +71,7 @@ export class BunSQLiteCache<TData = any> {
     constructor(private readonly configuration: BunSQLiteCacheConfiguration = {}) {
         const config = BunSQLiteCacheConfigurationSchema.parse(configuration);
         this.db = initSqliteCache(config);
-        this.checkInterval = setInterval(this.checkForExpiredItems, 1000);
+        this.checkInterval = setInterval(this.checkForExpiredItems, 500);
     }
 
     public async get<T = TData>(key: string): Promise<T | undefined> {
@@ -96,12 +96,12 @@ export class BunSQLiteCache<TData = any> {
         key: string,
         value: T,
         opts: { ttlMs?: number; compress?: boolean; } = {}
-    ) {
+    ): Promise<boolean> {
         if (this.isClosed) {
             throw new Error("Cache is closed");
         }
 
-        const ttl = opts.ttlMs ?? this.configuration.defaultTTLMs;
+        const ttl = opts.ttlMs ?? this.configuration.defaultTtlMs;
         const expires = ttl !== undefined ? new Date(now() + ttl) : undefined;
         let compression = opts.compress ?? this.configuration.compress ?? false;
         let valueBuffer = serialize(value);
@@ -117,14 +117,23 @@ export class BunSQLiteCache<TData = any> {
             compression = false;
         }
 
-        const db = await this.db;
-        db.setStatement.run({
-            $key: key,
-            $value: valueBuffer,
-            $expires: expires ? expires.getTime() : null,
-            $now: now(),
-            $compressed: compression ? 1 : 0
-        })
+        try {
+            const db = await this.db;
+            db.setStatement.run({
+                $key: key,
+                $value: valueBuffer,
+                $expires: expires ? expires.getTime() : null,
+                $now: now(),
+                $compressed: compression ? 1 : 0
+            });
+            return true;
+        } catch (ex) {
+            console.error(
+                "Error in bun-sqlite-cache when setting cache item",
+                ex
+            );
+            return false;
+        }
 
         setImmediate(this.checkForExpiredItems.bind(this));
     }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test'
-import BunSQLiteCache from '../src'
+import { BunSQLiteCache } from '../src'
 
 describe('should', () => {
   it('Setting a cache value: value equal', async () => {

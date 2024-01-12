@@ -1,6 +1,6 @@
 {
   "name": "bun-sqlite-cache",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "description": "",
@@ -12,7 +12,11 @@
     "dist"
   ],
   "keywords": [
-    "bun"
+    "bun",
+    "sqlite",
+    "cache",
+    "lru",
+    "ttl"
   ],
   "license": "MIT",
   "homepage": "https://github.com/notskamr/bun-sqlite-cache#readme",
