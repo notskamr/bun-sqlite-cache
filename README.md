@@ -34,31 +34,35 @@ const options: BunSQLiteCacheConfiguration = {
 
 const cache = new BunSQLiteCache(options)
 ```
-#### `set(key: string, value: any, opts?: { ttlMs?:  number, compress?: boolean }): Promise<boolean>`
+#### `set(key: string, value: any, opts?: { ttlMs?:  number, compress?: boolean }): boolean`
 Adds a value to the cache by serializing the given value and adding it to the table
 - `key`: the key to store the value under
 - `value`: the value to store - can be anything serializable by 'v8'
 - opts:
     - `ttlMs`: the time it takes (in ms) for a cached row to expire: default:- no expiry
     - `compress`: whether to compress data before putting it in the cache (uses Bun's synchronous gzip)
-- returns: Promise with a `boolean` dictating whether the value was successfully added to the cache
+- returns: `boolean` dictating whether the value was successfully added to the cache
 
-#### `get(key: string): Promise<any>`
+#### `get(key: string, withMeta?: boolean):  any | ValueWithMeta<T> | undefined`
 Gets a value from the cache by deserializing the value stored under the given key
 - `key`: the key to get the value from
-- returns: Promise with the deserialized value stored under the given key (`any`)
+- `withMeta`: whether to return the value with its metadata (i.e. `compressed` and `key`): default:- false
+  - if `withMeta` is `true`, the return value will be of type `ValueWithMeta<T>`: `{ value: any, compressed: boolean, key: string }`
+- returns: Deserialized value stored under the given key (`any`)
 
-#### `delete(key: string): Promise<void>`
+#### `delete(key: string): void`
 Deletes a value from the cache
 - `key`: the key to delete the value from
-- returns: Promise with void - no return value really
+- returns: void
 
-#### `clear(): Promise<void>`
+#### `clear(): void`
 Clears the cache
-- returns: Promise with void - no return value really
+- returns: void
 
 ## Contributing
-Contributions are welcome! Feel free to open an issue or submit a pull request.
+Contributions are welcome - this is my first package so it's probably riddled with stuff that could be improved.
+Feel free to open an issue or submit a pull request.
+
 
 ## License
 MIT

@@ -19,8 +19,9 @@ const BunSQLiteCacheConfigurationSchema = z.object({
     compress: z.boolean().optional().default(false),
 })
 
-async function initSqliteCache(configuration: BunSQLiteCacheConfiguration) {
+function initSqliteCache(configuration: BunSQLiteCacheConfiguration) {
     const db = new Database(configuration.database || ":memory:");
+    db.exec("PRAGMA journal_mode = WAL;");
     db.transaction(() => {
         db.prepare(
             `CREATE TABLE IF NOT EXISTS cache (
@@ -63,6 +64,11 @@ async function initSqliteCache(configuration: BunSQLiteCacheConfiguration) {
 
 const now = Date.now;
 
+type ValueWithMeta<T> = { value: T, key: string, compressed: boolean };
+
+/**
+ * Represents a cache implementation using SQLite as the underlying storage.
+ */
 export class BunSQLiteCache<TData = any> {
     private readonly db: ReturnType<typeof initSqliteCache>;
     private readonly checkInterval: NodeJS.Timeout;
@@ -73,12 +79,21 @@ export class BunSQLiteCache<TData = any> {
         this.db = initSqliteCache(config);
         this.checkInterval = setInterval(this.checkForExpiredItems, 500);
     }
-
-    public async get<T = TData>(key: string): Promise<T | undefined> {
+    /**
+     * Retrieves the value associated with the specified key from the cache.
+     * 
+     * @param key - The key of the value to retrieve.
+     * @param withMeta - Optional. Specifies whether to include metadata in the returned value.
+     * @returns The retrieved value, or undefined if the key does not exist in the cache.
+     *          If `withMeta` is true, returns an object containing the value, key, and compression status.
+     */
+    public get<T = any>(key: string, withMeta?: false): T | undefined;
+    public get<T = any>(key: string, withMeta: true): ValueWithMeta<T> | undefined;
+    public get<T = TData>(key: string, withMeta?: boolean): T | ValueWithMeta<T> | undefined {
         if (this.isClosed) {
             throw new Error("Cache is closed");
         }
-        const db = await this.db;
+        const db = this.db;
         const res = db.getStatement.get({
             $key: key,
             $now: now(),
@@ -90,13 +105,29 @@ export class BunSQLiteCache<TData = any> {
         if ((res as any).compressed) {
             value = gunzipSync(Buffer.from(value));
         }
-        return deserialize(Buffer.from(value));
+        const deserialized = deserialize(Buffer.from(value));
+
+        if (withMeta) {
+            return { value: deserialized, key, compressed: (res as any).compressed === 1 ? true : false };
+        }
+        return deserialized;
     }
-    public async set<T = TData>(
+    /**
+     * Sets a value in the cache with the specified key.
+     * 
+     * @param key - The key to associate with the value.
+     * @param value - The value to be stored in the cache.
+     * @param opts - Optional settings for the cache item.
+     * @param opts.ttlMs - The time-to-live for the cache item in milliseconds.
+     * @param opts.compress - Indicates whether to compress the value before storing it in the cache.
+     * @returns True if the value was successfully set in the cache, false otherwise.
+     * @throws Error if the cache is closed.
+     */
+    public set<T = TData>(
         key: string,
         value: T,
         opts: { ttlMs?: number; compress?: boolean; } = {}
-    ): Promise<boolean> {
+    ): boolean {
         if (this.isClosed) {
             throw new Error("Cache is closed");
         }
@@ -116,9 +147,9 @@ export class BunSQLiteCache<TData = any> {
         } else {
             compression = false;
         }
-
+        setImmediate(this.checkForExpiredItems.bind(this));
         try {
-            const db = await this.db;
+            const db = this.db;
             db.setStatement.run({
                 $key: key,
                 $value: valueBuffer,
@@ -135,38 +166,49 @@ export class BunSQLiteCache<TData = any> {
             return false;
         }
 
-        setImmediate(this.checkForExpiredItems.bind(this));
     }
 
-    public async delete(key: string) {
+    /**
+     * Deletes a cache entry with the specified key.
+     * 
+     * @param key - The key of the cache entry to delete.
+     * @throws Error if the cache is closed.
+     */
+    public delete(key: string) {
         if (this.isClosed) {
             throw new Error("Cache is closed");
         }
-        (await this.db).deleteStatement.run({ $key: key });
+        this.db.deleteStatement.run({ $key: key });
     }
 
-    public async clear() {
+    /**
+     * Clears the cache by running the clearStatement.
+     * @throws {Error} If the cache is closed.
+     */
+    public clear() {
         if (this.isClosed) {
             throw new Error("Cache is closed");
         }
-
-        (await this.db).clearStatement.run({});
+        this.db.clearStatement.run({});
     }
 
-    public async close() {
+    /**
+     * Closes the cache and releases any resources associated with it.
+     */
+    public close() {
         clearInterval(this.checkInterval);
-        (await this.db).db.close();
+        this.db.db.close();
         this.isClosed = true;
     }
 
     private checkForExpiredItems =
-        async () => {
+        () => {
             if (this.isClosed) {
                 return;
             }
 
             try {
-                const db = await this.db;
+                const db = this.db;
                 db.cleanupExpiredStatement.run({ $now: now() });
 
                 if (this.configuration.maxItems) {
