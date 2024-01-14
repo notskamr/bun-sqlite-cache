@@ -13,8 +13,8 @@ import { BunSQLiteCache } from "bun-sqlite-cache";
 
 const cache = new BunSQLiteCache();
 
-await cache.set("foo", { bar: "baz", waldo: [4, 3, 2, 8] });
-const value = await cache.get("foo");
+cache.set("foo", { bar: "baz", waldo: [4, 3, 2, 8] });
+const value = cache.get("foo");
 
 console.log(value) // { bar: "baz", waldo: [4, 3, 2, 8] }
 ```
