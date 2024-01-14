@@ -57,25 +57,25 @@ function initSqliteCache(configuration: BunSQLiteCacheConfiguration) {
 
 const now = Date.now;
 
-type ValueWithMeta<T> = { value: T, key: string, compressed: boolean };
+type ValueWithMeta<T> = { value: T, key: string, compressed: boolean; };
 
 const parseConfig = (config: BunSQLiteCacheConfiguration) => {
     const rawConfig = config;
     let errors: string[] = [];
     if (rawConfig.database && typeof rawConfig.database !== "string") {
-        errors.push("'database'")
+        errors.push("'database'");
     }
     if (rawConfig.defaultTtlMs && typeof rawConfig.defaultTtlMs !== "number") {
-        errors.push("'defaultTtlMs'")
+        errors.push("'defaultTtlMs'");
     }
     if (rawConfig.maxItems && typeof rawConfig.maxItems !== "number") {
-        errors.push("'maxItems'")
+        errors.push("'maxItems'");
     }
     if (rawConfig.compress && typeof rawConfig.compress !== "boolean") {
-        errors.push("'compress'")
+        errors.push("'compress'");
     }
     if (errors.length > 0) {
-        throw new Error(`Invalid ${errors.join(",")} configuration`)
+        throw new Error(`Invalid ${errors.join(",")} configuration`);
     }
     return {
         database: rawConfig.database ?? ":memory:",
@@ -83,8 +83,8 @@ const parseConfig = (config: BunSQLiteCacheConfiguration) => {
         maxItems: rawConfig.maxItems,
         compress: rawConfig.compress,
 
-    }
-}
+    };
+};
 
 /**
  * Represents a cache implementation using SQLite as the underlying storage.
@@ -95,7 +95,7 @@ export class BunSQLiteCache<TData = any> {
     isClosed: boolean = false;
 
     constructor(private readonly configuration: BunSQLiteCacheConfiguration = {}) {
-        this.configuration = parseConfig(configuration)
+        this.configuration = parseConfig(configuration);
         this.db = initSqliteCache(this.configuration);
         this.checkInterval = setInterval(this.checkForExpiredItems, 500);
     }
@@ -242,7 +242,7 @@ export class BunSQLiteCache<TData = any> {
                     ex
                 );
             }
-        }
+        };
 
 }
 
