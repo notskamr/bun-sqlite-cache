@@ -1,4 +1,3 @@
-import z from "zod";
 import Database from "bun:sqlite";
 import { serialize, deserialize } from "v8";
 import { gzipSync, gunzipSync } from "bun";
@@ -12,12 +11,6 @@ export interface BunSQLiteCacheConfiguration {
     readonly compress?: boolean;
 }
 
-const BunSQLiteCacheConfigurationSchema = z.object({
-    database: z.string().optional().default(":memory:"),
-    defaultTtlMs: z.number().optional(),
-    maxItems: z.number().positive().optional(),
-    compress: z.boolean().optional().default(false),
-})
 
 function initSqliteCache(configuration: BunSQLiteCacheConfiguration) {
     const db = new Database(configuration.database || ":memory:");
@@ -66,6 +59,33 @@ const now = Date.now;
 
 type ValueWithMeta<T> = { value: T, key: string, compressed: boolean };
 
+const parseConfig = (config: BunSQLiteCacheConfiguration) => {
+    const rawConfig = config;
+    let errors: string[] = [];
+    if (rawConfig.database && typeof rawConfig.database !== "string") {
+        errors.push("'database'")
+    }
+    if (rawConfig.defaultTtlMs && typeof rawConfig.defaultTtlMs !== "number") {
+        errors.push("'defaultTtlMs'")
+    }
+    if (rawConfig.maxItems && typeof rawConfig.maxItems !== "number") {
+        errors.push("'maxItems'")
+    }
+    if (rawConfig.compress && typeof rawConfig.compress !== "boolean") {
+        errors.push("'compress'")
+    }
+    if (errors.length > 0) {
+        throw new Error(`Invalid ${errors.join(",")} configuration`)
+    }
+    return {
+        database: rawConfig.database ?? ":memory:",
+        defaultTtlMs: rawConfig.defaultTtlMs,
+        maxItems: rawConfig.maxItems,
+        compress: rawConfig.compress,
+
+    }
+}
+
 /**
  * Represents a cache implementation using SQLite as the underlying storage.
  */
@@ -75,8 +95,8 @@ export class BunSQLiteCache<TData = any> {
     isClosed: boolean = false;
 
     constructor(private readonly configuration: BunSQLiteCacheConfiguration = {}) {
-        const config = BunSQLiteCacheConfigurationSchema.parse(configuration);
-        this.db = initSqliteCache(config);
+        this.configuration = parseConfig(configuration)
+        this.db = initSqliteCache(this.configuration);
         this.checkInterval = setInterval(this.checkForExpiredItems, 500);
     }
     /**

@@ -34,7 +34,7 @@ const options: BunSQLiteCacheConfiguration = {
 
 const cache = new BunSQLiteCache(options)
 ```
-#### `set(key: string, value: any, opts?: { ttlMs?:  number, compress?: boolean }): boolean`
+#### `set(key: string, value: any, opts?: { ttlMs?: number, compress?: boolean }): boolean`
 Adds a value to the cache by serializing the given value and adding it to the table
 - `key`: the key to store the value under
 - `value`: the value to store - can be anything serializable by 'v8'

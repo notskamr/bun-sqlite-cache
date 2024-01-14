@@ -1,16 +1,24 @@
 {
   "name": "bun-sqlite-cache",
   "version": "1.0.0",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "description": "",
-  "scripts": {
-    "build": "bun run build.mjs",
-    "prepublishOnly": "bun run build"
+  "author": "Varun Sahni <contact@vsahni.me>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/notskamr/bun-sqlite-cache.git"
   },
+  "main": "dist/index.js",
+  "devDependencies": {
+    "@types/bun": "^1.0.0",
+    "@types/node": "^20.11.0",
+    "bun-plugin-dts": "^0.2.1",
+    "typescript": "^5.2.2"
+  },
+  "bugs": "https://github.com/wobsoriano/bun-sqlite-cache/issues",
+  "description": "",
   "files": [
     "dist"
   ],
+  "homepage": "https://github.com/notskamr/bun-sqlite-cache#readme",
   "keywords": [
     "bun",
     "sqlite",
@@ -19,20 +27,9 @@
     "ttl"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/notskamr/bun-sqlite-cache#readme",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/notskamr/bun-sqlite-cache.git"
+  "scripts": {
+    "build": "bun run build.mjs",
+    "prepublishOnly": "bun run build"
   },
-  "bugs": "https://github.com/wobsoriano/bun-sqlite-cache/issues",
-  "author": "Varun Sahni <contact@vsahni.me>",
-  "devDependencies": {
-    "@types/bun": "^1.0.0",
-    "@types/node": "^20.11.0",
-    "bun-plugin-dts": "^0.2.1",
-    "typescript": "^5.2.2"
-  },
-  "dependencies": {
-    "zod": "^3.22.4"
-  }
+  "types": "dist/index.d.ts"
 }

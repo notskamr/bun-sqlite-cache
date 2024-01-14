@@ -65,4 +65,11 @@ describe('should', () => {
     expect(value?.value).toEqual(testObj)
     expect(value?.compressed).toEqual(true)
   })
+
+  it("Throw error on invalid config", () => {
+    expect(() => { new BunSQLiteCache({ database: 4 as any }) }).toThrow("Invalid 'database' configuration")
+    expect(() => { new BunSQLiteCache({ defaultTtlMs: "4" as any }) }).toThrow("Invalid 'defaultTtlMs' configuration")
+    expect(() => { new BunSQLiteCache({ compress: "false" as any }) }).toThrow("Invalid 'compress' configuration")
+    expect(() => { new BunSQLiteCache({ maxItems: "7" as any }) }).toThrow("Invalid 'maxItems' configuration")
+  })
 })
