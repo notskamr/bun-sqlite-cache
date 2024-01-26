@@ -245,5 +245,3 @@ export class BunSQLiteCache<TData = any> {
         };
 
 }
-
-export default BunSQLiteCache;

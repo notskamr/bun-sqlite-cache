@@ -1,6 +1,6 @@
 {
   "name": "bun-sqlite-cache",
-  "version": "1.0.2",
+  "version": "1.2.0",
   "author": "Varun Sahni <contact@vsahni.me>",
   "repository": {
     "type": "git",

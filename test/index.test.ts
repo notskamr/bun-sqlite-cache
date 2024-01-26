@@ -42,7 +42,7 @@ describe('BunSQLiteCache', () => {
     const cache = new BunSQLiteCache();
     cache.set('test', { a: 1, b: 2 });
     cache.close();
-    expect(() => { cache.get('test') }).toThrow('Cache is closed');
+    expect(() => { cache.get('test'); }).toThrow('Cache is closed');
   });
 
   it('Closing the cache - set and check isClosed: be closed', () => {
@@ -67,15 +67,13 @@ describe('BunSQLiteCache', () => {
   });
 
   it("Throw error on invalid config", () => {
-    expect(() => { new BunSQLiteCache({ database: 4 as any }) }).toThrow("Invalid 'database' configuration");
-    expect(() => { new BunSQLiteCache({ defaultTtlMs: "4" as any }) }).toThrow("Invalid 'defaultTtlMs' configuration");
-    expect(() => { new BunSQLiteCache({ compress: "false" as any }) }).toThrow("Invalid 'compress' configuration");
-    expect(() => { new BunSQLiteCache({ maxItems: "7" as any }) }).toThrow("Invalid 'maxItems' configuration");
+    expect(() => { new BunSQLiteCache({ database: 4 as any }); }).toThrow("Invalid 'database' configuration");
+    expect(() => { new BunSQLiteCache({ defaultTtlMs: "4" as any }); }).toThrow("Invalid 'defaultTtlMs' configuration");
+    expect(() => { new BunSQLiteCache({ compress: "false" as any }); }).toThrow("Invalid 'compress' configuration");
+    expect(() => { new BunSQLiteCache({ maxItems: "7" as any }); }).toThrow("Invalid 'maxItems' configuration");
   });
 
   // Additional tests
-
-
   it('Setting and retrieving multiple cache values', () => {
     const cache = new BunSQLiteCache();
     const testObj1 = { a: 1, b: 2 };
@@ -87,18 +85,6 @@ describe('BunSQLiteCache', () => {
     cache.close();
     expect(value1).toEqual(testObj1);
     expect(value2).toEqual(testObj2);
-  });
-
-  it('Setting cache value with custom TTL and checking expiration', (done) => {
-    const cache = new BunSQLiteCache();
-    const testObj = { a: 1, b: 2 };
-    cache.set('test', testObj, { ttlMs: 1000 });
-    setTimeout(() => {
-      const value = cache.get('test');
-      expect(value).toBeUndefined();
-      cache.close();
-      done();
-    }, 1500);
   });
 
   it('Setting cache value with compression and checking compression status', () => {
@@ -133,7 +119,7 @@ describe('BunSQLiteCache', () => {
   it('Throw error on accessing closed cache', () => {
     const cache = new BunSQLiteCache();
     cache.close();
-    expect(() => { cache.get('test') }).toThrow('Cache is closed');
+    expect(() => { cache.get('test'); }).toThrow('Cache is closed');
   });
 
   it('Check if cache is closed after closing', () => {
@@ -144,9 +130,21 @@ describe('BunSQLiteCache', () => {
   });
 
   it('Throw error on invalid configuration parameters', () => {
-    expect(() => { new BunSQLiteCache({ database: 4 as any }) }).toThrow("Invalid 'database' configuration");
-    expect(() => { new BunSQLiteCache({ defaultTtlMs: "4" as any }) }).toThrow("Invalid 'defaultTtlMs' configuration");
-    expect(() => { new BunSQLiteCache({ compress: "false" as any }) }).toThrow("Invalid 'compress' configuration");
-    expect(() => { new BunSQLiteCache({ maxItems: "7" as any }) }).toThrow("Invalid 'maxItems' configuration");
+    expect(() => { new BunSQLiteCache({ database: 4 as any }); }).toThrow("Invalid 'database' configuration");
+    expect(() => { new BunSQLiteCache({ defaultTtlMs: "4" as any }); }).toThrow("Invalid 'defaultTtlMs' configuration");
+    expect(() => { new BunSQLiteCache({ compress: "false" as any }); }).toThrow("Invalid 'compress' configuration");
+    expect(() => { new BunSQLiteCache({ maxItems: "7" as any }); }).toThrow("Invalid 'maxItems' configuration");
+  });
+
+  it('Setting cache value with custom TTL and checking expiration', async () => {
+    const cache = new BunSQLiteCache();
+    const testObj = { a: 1, b: 2 };
+    cache.set('test', testObj, { ttlMs: 1000 });
+    const beforeValue = cache.get('test');
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    const afterValue = cache.get('test');
+    cache.close();
+    expect(beforeValue).toEqual(testObj);
+    expect(afterValue).toBeUndefined();
   });
 });
