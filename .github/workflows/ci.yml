@@ -35,3 +35,7 @@ jobs:
         name: Run test
         run: |
           bun test
+      - id: publish
+        uses: JS-DevTools/npm-publish@v3
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
